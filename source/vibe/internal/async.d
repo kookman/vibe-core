@@ -82,9 +82,13 @@ template Waitable(CB, alias WAIT, alias CANCEL, alias DONE)
 
 void asyncAwaitAny(bool interruptible, Waitables...)(Duration timeout, string func = __FUNCTION__)
 {
-	if (timeout == Duration.max) asyncAwaitAny!(interruptible, Waitables)(func);
-	else {
+	if (timeout == Duration.max) {
+		debug(VibeAsyncLog) logDebugV("kookman: Timeout was set to Duration.max - avoiding timer creation.");
+		asyncAwaitAny!(interruptible, Waitables)(func);
+	} else {
 		import eventcore.core;
+
+		debug(VibeAsyncLog) logDebugV("kookman: creating new timer -- GC allocs here");
 
 		auto tm = eventDriver.timers.create();
 		eventDriver.timers.set(tm, timeout, 0.seconds);
